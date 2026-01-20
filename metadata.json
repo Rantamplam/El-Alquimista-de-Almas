@@ -1,0 +1,7 @@
+{
+  "name": "El Alquimista de Almas: Mentor Virtual",
+  "description": "    🌌 Adytum: El Despertar Alquímico - Una plataforma interactiva de transmutación personal basada en sabiduría arcana y coaching moderno. Incluye un mentor IA (\"El Archimago\") con búsqueda web integrada (Google Search Grounding), sistema de entrenamiento de 21 días, meditaciones guiadas y un Libro de Sombras digital para el registro persistente de la evolución del iniciado.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
