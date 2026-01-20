@@ -19,12 +19,14 @@ export const getMentorResponse = async (
   history: { role: 'user' | 'model'; parts: { text: string }[] }[],
   userProgress: string
 ) => {
-  // Inicializamos la API
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+  // Creamos la instancia justo antes de la llamada para asegurar que tiene la clave actualizada
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) {
+    throw new Error("No se ha encontrado la conexión con el Éter (API Key missing).");
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
   
-  // Preparamos el contenido: Historial + Mensaje Actual
-  // El historial debe ser una secuencia de turnos. 
-  // Nos aseguramos de incluir el contexto del día actual en el mensaje del usuario.
   const contents = [
     ...history,
     { 
