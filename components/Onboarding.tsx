@@ -43,10 +43,11 @@ export const Onboarding: React.FC<{ onStart: (name?: string) => void }> = ({ onS
           </div>
         </div>
 
-        <div className="bg-amber-950/20 p-10 rounded-[3rem] border border-amber-500/20 text-center space-y-6">
-          <h3 className="cinzel text-amber-500 font-bold tracking-[0.2em] uppercase text-sm">El Sagrado Compromiso</h3>
-          <p className="text-slate-200 serif italic text-xl leading-relaxed">
-            "Para que el hierro se vuelva oro, el fuego debe ser constante. La maestría requiere 21 días de repetición ininterrumpida para cristalizar en tu subconsciente. ¿Aceptas el desafío de tu propia evolución?"
+        <div className="bg-amber-950/20 p-10 rounded-[3rem] border border-amber-500/20 text-center space-y-6 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-amber-500/5 blur-xl group-hover:bg-amber-500/10 transition-all duration-1000"></div>
+          <h3 className="cinzel text-amber-500 font-bold tracking-[0.2em] uppercase text-sm relative z-10">El Sagrado Compromiso</h3>
+          <p className="text-slate-100 serif italic text-2xl leading-relaxed relative z-10">
+            "No busques convertirte en algo nuevo; busca recordar lo que siempre has sido. El carbón no teme a la presión, pues sabe que es el abrazo necesario para volverse diamante. En 21 soles, el fuego de tu atención fundirá el óxido del olvido para revelar el Sol que ya habita en tu pecho. ¿Posees el coraje de mirar tu propia luz?"
           </p>
         </div>
 
