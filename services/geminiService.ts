@@ -19,27 +19,29 @@ export const getMentorResponse = async (
   history: { role: 'user' | 'model'; parts: { text: string }[] }[],
   userProgress: string
 ) => {
-  // Limpiamos la clave de posibles espacios o strings inválidos
+  // Limpieza profunda de la clave
   const rawKey = process.env.API_KEY;
-  const apiKey = (rawKey && rawKey !== "null" && rawKey !== "undefined") ? rawKey.trim() : null;
+  const apiKey = (rawKey && typeof rawKey === 'string' && rawKey.length > 10 && rawKey !== "null" && rawKey !== "undefined") 
+    ? rawKey.trim().replace(/['"]/g, '') 
+    : null;
   
-  if (!apiKey || apiKey.length < 20) {
-    throw new Error("LA LLAVE NO ENCAJA: No hay una API_KEY válida en el sistema. Revisa las variables de entorno en Netlify.");
+  if (!apiKey) {
+    throw new Error("LA LLAVE NO ENCAJA: No hemos encontrado tu API_KEY sagrada. Si Netlify está pausado, intenta migrar a Vercel o revisa las variables de entorno.");
   }
 
-  const ai = new GoogleGenAI({ apiKey });
-  
-  const contents = [
-    ...history,
-    { 
-      role: 'user' as const, 
-      parts: [{ text: `[Contexto: Día ${userProgress}] Iniciado pregunta: ${message}` }] 
-    }
-  ];
-
   try {
+    const ai = new GoogleGenAI({ apiKey });
+    
+    const contents = [
+      ...history,
+      { 
+        role: 'user' as const, 
+        parts: [{ text: `[Contexto: Día ${userProgress}] Iniciado pregunta: ${message}` }] 
+      }
+    ];
+
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview', // Cambiado a Flash para evitar errores de cuota/validación
+      model: 'gemini-3-flash-preview', 
       contents: contents,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
@@ -58,9 +60,12 @@ export const getMentorResponse = async (
     return { text, sources };
   } catch (error: any) {
     console.error("Error en el Oráculo:", error);
-    if (error.message?.includes("API key not valid")) {
-      throw new Error("API KEY INVÁLIDA: La clave copiada en Netlify no es correcta. Asegúrate de copiarla sin espacios ni comillas.");
+    
+    // Manejo específico del error 400 de clave inválida
+    if (error.message?.includes("API key not valid") || error.status === "INVALID_ARGUMENT") {
+      throw new Error("TU LLAVE ES INVÁLIDA: La clave que has puesto en el panel de control no es correcta. Asegúrate de que es la clave de API de Google Gemini (empieza por AIza...).");
     }
-    throw error;
+    
+    throw new Error("INTERFERENCIA EN EL ÉTER: El servidor está saturado o pausado. Usa el Maestro Yoda externo por ahora.");
   }
 };

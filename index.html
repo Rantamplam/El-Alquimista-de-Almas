@@ -24,6 +24,7 @@
         background-color: var(--bg-deep);
         color: #f8fafc;
         overflow-x: hidden;
+        margin: 0;
       }
       .serif { font-family: 'Playfair Display', serif; }
       .cinzel { font-family: 'Cinzel', serif; }
@@ -62,6 +63,20 @@
         -webkit-text-fill-color: transparent;
       }
 
+      #local-warning {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: #020617;
+        color: white;
+        padding: 2rem;
+        text-align: center;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
       ::-webkit-scrollbar { width: 6px; }
       ::-webkit-scrollbar-track { background: #020617; }
       ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
@@ -85,8 +100,37 @@
 </script>
 </head>
   <body>
+    <div id="local-warning">
+      <h1 class="cinzel text-amber-500 text-4xl mb-4 uppercase tracking-widest">⚠️ Acceso Bloqueado por el Navegador</h1>
+      <p class="serif italic text-xl max-w-2xl mx-auto text-slate-300">
+        "Para que la magia de Adytum funcione, no puedes simplemente abrir el archivo. Debes usar un servidor local o desplegarlo en la red."
+      </p>
+      <div class="mt-8 p-6 glass rounded-2xl text-left font-mono text-sm inline-block">
+        <p class="text-emerald-400"># Solución rápida:</p>
+        <p>1. Instala Node.js</p>
+        <p>2. En la terminal escribe: <span class="text-amber-500">npx serve .</span></p>
+        <p>3. Abre la dirección que te indique.</p>
+      </div>
+      <p class="mt-8 text-slate-500 text-xs cinzel uppercase tracking-widest">O usa el despliegue automático en Vercel o Netlify.</p>
+    </div>
+
+    <script>
+      // Detección de protocolo local
+      if (window.location.protocol === 'file:') {
+        document.getElementById('local-warning').style.display = 'flex';
+      }
+    </script>
+
     <div class="stars"></div>
     <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
+    
+    <!-- Usamos ruta relativa para que funcione mejor en entornos de desarrollo -->
+    <script type="module" src="./index.tsx"></script>
+    
+    <noscript>
+      <div style="text-align: center; padding: 50px;">
+        <h2>JavaScript es necesario para entrar en el Adytum.</h2>
+      </div>
+    </noscript>
   </body>
 </html>

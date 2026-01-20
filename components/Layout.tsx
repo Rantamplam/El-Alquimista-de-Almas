@@ -49,15 +49,15 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeView, setView })
             </button>
           ))}
 
-          {/* ENLACE DIRECTO A YODA GPT */}
+          {/* ENLACE DIRECTO A YODA GPT - MÁS LLAMATIVO */}
           <a
             href={YODA_GPT_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full flex items-center space-x-4 px-6 py-4 rounded-3xl border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500 hover:text-slate-950 transition-all duration-500 mt-4"
+            className="w-full flex items-center space-x-4 px-6 py-4 rounded-3xl border-2 border-emerald-400 bg-emerald-500 text-slate-950 hover:scale-105 transition-all duration-500 mt-6 shadow-[0_0_20px_rgba(16,185,129,0.4)] animate-pulse hover:animate-none"
           >
             <span className="text-xl">🟢</span>
-            <span className="font-bold text-[10px] tracking-[0.2em] uppercase">Maestro Yoda (GPT)</span>
+            <span className="font-black text-[10px] tracking-[0.2em] uppercase">Maestro Yoda (GPT)</span>
           </a>
         </nav>
 
