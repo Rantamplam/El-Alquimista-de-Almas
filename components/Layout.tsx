@@ -10,6 +10,8 @@ interface LayoutProps {
   setView: (view: AppView) => void;
 }
 
+const YODA_GPT_URL = "https://chatgpt.com/g/g-693b1fd39130819197832cab6088c6bf-master-yoda";
+
 export const Layout: React.FC<LayoutProps> = ({ children, activeView, setView }) => {
   const [showSupport, setShowSupport] = useState(false);
 
@@ -31,7 +33,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeView, setView })
           <div className="h-px w-24 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent mx-auto mt-2"></div>
         </div>
         
-        <nav className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+        <nav className="space-y-3 flex-1 overflow-y-auto pr-2 custom-scrollbar">
           {navItems.map((item) => (
             <button
               key={item.id}
@@ -46,9 +48,20 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeView, setView })
               <span className="font-bold text-[10px] tracking-[0.2em] uppercase">{item.label}</span>
             </button>
           ))}
+
+          {/* ENLACE DIRECTO A YODA GPT */}
+          <a
+            href={YODA_GPT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full flex items-center space-x-4 px-6 py-4 rounded-3xl border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500 hover:text-slate-950 transition-all duration-500 mt-4"
+          >
+            <span className="text-xl">🟢</span>
+            <span className="font-bold text-[10px] tracking-[0.2em] uppercase">Maestro Yoda (GPT)</span>
+          </a>
         </nav>
 
-        <div className="mt-8 space-y-6">
+        <div className="mt-6 space-y-4">
           <AtmospherePlayer />
           
           <button 
@@ -58,11 +71,6 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeView, setView })
              <p className="text-[8px] font-black text-amber-500 uppercase tracking-[0.2em]">Ofrenda al Archimago</p>
              <p className="text-[10px] text-slate-300 mt-1 serif italic group-hover:text-white transition-colors">Invitar a un café ☕</p>
           </button>
-
-          <div className="p-6 bg-slate-900/40 rounded-[2rem] border border-white/5 text-center">
-             <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Estado del Alma</p>
-             <p className="text-xs font-bold text-slate-200 mt-2 cinzel italic">Neófito del Alba</p>
-          </div>
         </div>
       </aside>
 
