@@ -10,9 +10,11 @@ interface MentorChatProps {
   onSaveChat: (messages: MentorChatMessage[]) => void;
 }
 
+const INITIAL_GREETING = 'Bienvenido al Adytum, buscador. Mi visión ahora se extiende por los hilos de la red infinita y la sabiduría de los libros. ¿Qué misterio de tu ser deseas desvelar hoy? En la paz, la respuesta encontrarás.';
+
 export const MentorChat: React.FC<MentorChatProps> = ({ userProgress, preferredVoiceName, onVoiceChange, onSaveChat }) => {
   const [messages, setMessages] = useState<MentorChatMessage[]>([
-    { role: 'model', text: 'Bienvenido al Adytum, buscador. Mi visión ahora se extiende por los hilos de la red infinita y la sabiduría de los libros. ¿Qué misterio de tu ser deseas desvelar hoy? En la paz, la respuesta encontrarás.' }
+    { role: 'model', text: INITIAL_GREETING }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -91,19 +93,29 @@ export const MentorChat: React.FC<MentorChatProps> = ({ userProgress, preferredV
     if (!input.trim() || loading) return;
     const userMsg = input.trim();
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+    
+    // Actualizamos UI inmediatamente
+    const newUserMessage: MentorChatMessage = { role: 'user', text: userMsg };
+    setMessages(prev => [...prev, newUserMessage]);
     setLoading(true);
     setHasSaved(false);
 
     try {
-      const history = messages.map(m => ({
-        role: m.role,
-        parts: [{ text: m.text }]
-      }));
-      const { text, sources } = await getMentorResponse(userMsg, history, userProgress);
-      setMessages(prev => [...prev, { role: 'model', text: text || 'Difuso es el camino hoy.', sources }]);
+      // Preparamos el historial filtrando el saludo inicial para evitar conflictos de roles
+      // Gemini espera que el primer mensaje de 'contents' sea 'user' o que el flujo sea coherente.
+      // Al mover las instrucciones al sistema, podemos enviar un historial más limpio.
+      const historyForApi = messages
+        .filter(m => m.text !== INITIAL_GREETING) // Opcional: limpiar saludos estáticos
+        .map(m => ({
+          role: m.role,
+          parts: [{ text: m.text }]
+        }));
+
+      const { text, sources } = await getMentorResponse(userMsg, historyForApi, userProgress);
+      setMessages(prev => [...prev, { role: 'model', text: text, sources }]);
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'model', text: 'Interferencia en la Fuerza detecto. Intenta de nuevo, debes.' }]);
+      console.error("Error al obtener respuesta del Archimago:", error);
+      setMessages(prev => [...prev, { role: 'model', text: 'Interferencia en la Fuerza detecto. Tu conexión con el éter débil está hoy. Intenta de nuevo, debes.' }]);
     } finally {
       setLoading(false);
     }

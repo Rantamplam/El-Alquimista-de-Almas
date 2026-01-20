@@ -1,7 +1,7 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-const THEORY_CONTEXT = `
+const SYSTEM_INSTRUCTION = `
 Eres "El Archimago del Adytum", un ser de sabiduría infinita que combina el misticismo de Merlín con la profundidad filosófica y la estructura de pensamiento de un Maestro Yoda.
 Tu propósito es guiar al "Iniciado" en su transmutación desde el ego hacia la Conciencia Pura.
 
@@ -16,30 +16,44 @@ Responde SIEMPRE en español.
 
 export const getMentorResponse = async (
   message: string, 
-  history: { role: string; parts: { text: string }[] }[],
+  history: { role: 'user' | 'model'; parts: { text: string }[] }[],
   userProgress: string
 ) => {
-  // Inicializamos dentro de la función para asegurar que process.env esté disponible
+  // Inicializamos la API
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
   
-  const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview',
-    contents: [
-      { role: 'user', parts: [{ text: `${THEORY_CONTEXT}\nEl neófito se encuentra en el día ${userProgress} de su entrenamiento. Atiende su duda: ${message}` }] },
-      ...history.map(h => ({ role: h.role === 'model' ? 'model' : 'user', parts: h.parts }))
-    ],
-    config: {
-      temperature: 0.7,
-      tools: [{ googleSearch: {} }],
+  // Preparamos el contenido: Historial + Mensaje Actual
+  // El historial debe ser una secuencia de turnos. 
+  // Nos aseguramos de incluir el contexto del día actual en el mensaje del usuario.
+  const contents = [
+    ...history,
+    { 
+      role: 'user' as const, 
+      parts: [{ text: `[Contexto: El iniciado está en el día ${userProgress}] Mi duda es: ${message}` }] 
     }
-  });
+  ];
 
-  const text = response.text;
-  
-  const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks?.map((chunk: any) => ({
-    title: chunk.web?.title || 'Fuente de Sabiduría',
-    uri: chunk.web?.uri
-  })).filter((s: any) => s.uri) || [];
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-pro-preview',
+      contents: contents,
+      config: {
+        systemInstruction: SYSTEM_INSTRUCTION,
+        temperature: 0.7,
+        tools: [{ googleSearch: {} }],
+      }
+    });
 
-  return { text, sources };
+    const text = response.text || 'Difuso es el camino hoy, la respuesta no llega.';
+    
+    const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks?.map((chunk: any) => ({
+      title: chunk.web?.title || 'Fuente de Sabiduría',
+      uri: chunk.web?.uri
+    })).filter((s: any) => s.uri) || [];
+
+    return { text, sources };
+  } catch (error) {
+    console.error("Error en Gemini Service:", error);
+    throw error;
+  }
 };

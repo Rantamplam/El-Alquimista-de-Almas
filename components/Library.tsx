@@ -68,26 +68,22 @@ export const Library: React.FC<{ currentExercise?: DailyContent }> = ({ currentE
       <header className="text-center space-y-4">
         <h2 className="text-5xl font-bold cinzel gold-text tracking-widest uppercase">Grimorio de Sabiduría Arcaica</h2>
         <div className="h-px w-48 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent mx-auto"></div>
-        <p className="text-slate-400 italic serif text-lg">"La repetición graba la luz en la piedra del subconsciente."</p>
+        <p className="text-slate-400 italic serif text-lg">"Conocimiento libre para el alma que busca la verdad."</p>
       </header>
 
-      {/* SECCIÓN DE MONETIZACIÓN: COMPRA DE LIBROS */}
+      {/* SECCIÓN DE ACCESO LIBRE */}
       <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
         {DEFAULT_BOOK_CONTEXT.map((book, idx) => (
-          <div key={idx} className="glass p-8 rounded-[3rem] border-amber-500/20 flex flex-col justify-between hover:border-amber-500/50 transition-all group">
+          <div key={idx} className="glass p-8 rounded-[3rem] border-violet-500/20 flex flex-col justify-between hover:border-violet-500/50 transition-all group relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10 text-4xl">📖</div>
             <div>
-               <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-2">Obra Original del Autor</p>
+               <p className="text-[10px] font-black text-violet-400 uppercase tracking-widest mb-2">Conocimiento Abierto</p>
                <h4 className="text-2xl cinzel font-bold text-white mb-4">{book.title}</h4>
                <p className="text-slate-400 serif italic text-sm leading-relaxed mb-6">{book.summary}</p>
             </div>
-            <a 
-              href={book.amazonLink} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="w-full bg-amber-600/10 border border-amber-500/50 py-3 rounded-full text-center text-amber-400 cinzel font-bold text-[10px] tracking-widest uppercase hover:bg-amber-500 hover:text-slate-900 transition-all"
-            >
-              Adquirir en Papel / Digital 📖
-            </a>
+            <div className="w-full bg-emerald-500/10 border border-emerald-500/30 py-3 rounded-full text-center text-emerald-400 cinzel font-bold text-[10px] tracking-widest uppercase">
+              Disponible en este Grimorio ✅
+            </div>
           </div>
         ))}
       </div>

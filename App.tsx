@@ -8,12 +8,14 @@ import { Library } from './components/Library';
 import { WisdomPortal } from './components/WisdomPortal';
 import { Meditations } from './components/Meditations';
 import { Onboarding } from './components/Onboarding';
+import { SupportModal } from './components/SupportModal';
 import { AppView, UserProgress, MentorChatMessage, SavedMentorChat } from './types';
 import { EXERCISES } from './data/exercises';
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppView>(AppView.DASHBOARD);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showSupport, setShowSupport] = useState(false);
   const [userName, setUserName] = useState('Aprendiz');
   const [progress, setProgress] = useState<UserProgress>({
     currentDay: 1,
@@ -40,6 +42,11 @@ const App: React.FC = () => {
     }
     if (savedName) setUserName(savedName);
     if (!hasOnboarded) setShowOnboarding(true);
+
+    // Evento para abrir soporte desde componentes hijos
+    const handleOpenSupport = () => setShowSupport(true);
+    window.addEventListener('openSupport', handleOpenSupport);
+    return () => window.removeEventListener('openSupport', handleOpenSupport);
   }, []);
 
   const handleStartCourse = (name?: string) => {
@@ -147,7 +154,6 @@ const App: React.FC = () => {
           </header>
           
           <div className="space-y-24">
-            {/* Seccion de Reflexiones Diarias */}
             <section className="space-y-10">
               <h3 className="text-2xl cinzel text-amber-500/70 tracking-[0.3em] font-bold uppercase border-l-4 border-amber-500 pl-6">Registros de Estación</h3>
               <div className="grid grid-cols-1 gap-12">
@@ -171,7 +177,6 @@ const App: React.FC = () => {
               </div>
             </section>
 
-            {/* Seccion de Diálogos con el Mentor */}
             {progress.mentorChats.length > 0 && (
               <section className="space-y-10">
                 <h3 className="text-2xl cinzel text-violet-400 tracking-[0.3em] font-bold uppercase border-l-4 border-violet-500 pl-6">Diálogos con el Archimago</h3>
@@ -200,6 +205,8 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
+
+      {showSupport && <SupportModal onClose={() => setShowSupport(false)} />}
     </Layout>
   );
 };

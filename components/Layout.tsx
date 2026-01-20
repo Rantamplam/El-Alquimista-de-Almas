@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { AppView } from '../types';
 import { AtmospherePlayer } from './AtmospherePlayer';
+import { SupportModal } from './SupportModal';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -10,6 +11,8 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children, activeView, setView }) => {
+  const [showSupport, setShowSupport] = useState(false);
+
   const navItems = [
     { id: AppView.DASHBOARD, label: 'Portal de Iniciado', icon: '🌌' },
     { id: AppView.TODAY, label: 'Ritual del Alba', icon: '🕯️' },
@@ -26,7 +29,6 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeView, setView })
         <div className="mb-12 text-center relative group">
           <h1 className="text-4xl font-black cinzel gold-text tracking-[0.3em] drop-shadow-[0_0_15px_rgba(234,179,8,0.3)]">ADYTUM</h1>
           <div className="h-px w-24 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent mx-auto mt-2"></div>
-          <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[8px] cinzel text-amber-500/40 tracking-[0.2em] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">V 1.0 • EN EVOLUCIÓN</span>
         </div>
         
         <nav className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
@@ -50,15 +52,15 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeView, setView })
           <AtmospherePlayer />
           
           <button 
-            onClick={() => setView(AppView.MENTOR)}
-            className="w-full p-4 bg-violet-950/20 rounded-2xl border border-violet-500/20 text-center group hover:border-violet-500/50 transition-all"
+            onClick={() => setShowSupport(true)}
+            className="w-full p-4 bg-amber-950/20 rounded-2xl border border-amber-500/20 text-center group hover:border-amber-500/50 transition-all"
           >
-             <p className="text-[8px] font-black text-violet-400 uppercase tracking-[0.2em]">Mejorar la Obra</p>
-             <p className="text-[10px] text-slate-300 mt-1 serif italic group-hover:text-white transition-colors">¿Sugerencias para el Templo?</p>
+             <p className="text-[8px] font-black text-amber-500 uppercase tracking-[0.2em]">Ofrenda al Archimago</p>
+             <p className="text-[10px] text-slate-300 mt-1 serif italic group-hover:text-white transition-colors">Invitar a un café ☕</p>
           </button>
 
-          <div className="p-6 bg-amber-950/20 rounded-[2rem] border border-amber-500/10 text-center">
-             <p className="text-[9px] font-black text-amber-600 uppercase tracking-[0.3em]">Estado del Alma</p>
+          <div className="p-6 bg-slate-900/40 rounded-[2rem] border border-white/5 text-center">
+             <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Estado del Alma</p>
              <p className="text-xs font-bold text-slate-200 mt-2 cinzel italic">Neófito del Alba</p>
           </div>
         </div>
@@ -69,6 +71,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeView, setView })
           {children}
         </div>
       </main>
+
+      {showSupport && <SupportModal onClose={() => setShowSupport(false)} />}
     </div>
   );
 };
