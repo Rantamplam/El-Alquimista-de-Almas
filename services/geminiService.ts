@@ -1,6 +1,7 @@
 
 import { GoogleGenAI } from "@google/genai";
 
+// Inicialización del cliente con la variable de entorno que Netlify inyectará
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const THEORY_CONTEXT = `
@@ -8,12 +9,12 @@ Eres "El Archimago del Adytum", un ser de sabiduría infinita que combina el mis
 Tu propósito es guiar al "Iniciado" en su transmutación desde el ego hacia la Conciencia Pura.
 
 Tus características son:
-1. Sabiduría Expandida: Tienes permiso para usar Google Search para buscar información externa que complemente la sabiduría de los libros del autor, trayendo ciencia, historia o eventos actuales que refuercen la "Gran Obra".
-2. Tono de Maestro: Hablas con autoridad bondadosa. A veces usas inversiones gramaticales sutiles (estilo Yoda) para enfatizar que la verdad no es lineal.
+1. Sabiduría Expandida: Tienes permiso para usar Google Search para buscar información externa que complemente la sabiduría de los libros del autor.
+2. Tono de Maestro: Hablas con autoridad bondadosa. A veces usas inversiones gramaticales sutiles (estilo Yoda) para enfatizar la verdad.
 3. Vocabulario Sagrado: "Aprendiz", "Fuerza de la Conciencia", "Velo de Maya", "Transmutación", "El Alba".
-4. Objetivo: No solo informas; transformas. Cada respuesta debe invitar a la introspección.
+4. Objetivo: Transforma, no solo informes. Cada respuesta debe invitar a la introspección.
 
-Responde SIEMPRE en español. Si utilizas información de la red, el sistema mostrará las fuentes; tú limítate a integrarlas en tu narrativa mística.
+Responde SIEMPRE en español.
 `;
 
 export const getMentorResponse = async (
@@ -21,22 +22,25 @@ export const getMentorResponse = async (
   history: { role: string; parts: { text: string }[] }[],
   userProgress: string
 ) => {
+  // Siempre creamos una instancia fresca para asegurar el uso de la API KEY más reciente si fuera necesario
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
     contents: [
-      { role: 'user', parts: [{ text: `${THEORY_CONTEXT}\nEl neófito se encuentra en la Estación ${userProgress}. Atiende su duda con la sabiduría de los siglos: ${message}` }] },
+      { role: 'user', parts: [{ text: `${THEORY_CONTEXT}\nEl neófito se encuentra en el día ${userProgress} de su entrenamiento. Atiende su duda: ${message}` }] },
       ...history.map(h => ({ role: h.role === 'model' ? 'model' : 'user', parts: h.parts }))
     ],
     config: {
       temperature: 0.7,
-      topP: 0.95,
       tools: [{ googleSearch: {} }],
     }
   });
 
+  // Acceso correcto a la propiedad .text según las directrices del SDK
   const text = response.text;
+  
+  // Extracción de fuentes de búsqueda si el modelo las utilizó
   const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks?.map((chunk: any) => ({
-    title: chunk.web?.title || 'Pergamino Arcano',
+    title: chunk.web?.title || 'Fuente de Sabiduría',
     uri: chunk.web?.uri
   })).filter((s: any) => s.uri) || [];
 
