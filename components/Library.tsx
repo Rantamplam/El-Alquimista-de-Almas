@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { TheoryChapter, DailyContent } from '../types';
+import { DEFAULT_BOOK_CONTEXT } from '../constants';
 
 const SAMPLE_THEORY: TheoryChapter[] = [
   {
@@ -27,7 +28,6 @@ export const Library: React.FC<{ currentExercise?: DailyContent }> = ({ currentE
   const [activeChapter, setActiveChapter] = useState(SAMPLE_THEORY[0].id);
   const [readSections, setReadSections] = useState<string[]>([]);
 
-  // Cargar secciones leídas desde localStorage al montar
   useEffect(() => {
     const saved = localStorage.getItem('adytum_read_sections');
     if (saved) {
@@ -39,7 +39,6 @@ export const Library: React.FC<{ currentExercise?: DailyContent }> = ({ currentE
     }
   }, []);
 
-  // Guardar secciones leídas en localStorage cuando cambien
   useEffect(() => {
     localStorage.setItem('adytum_read_sections', JSON.stringify(readSections));
   }, [readSections]);
@@ -71,6 +70,27 @@ export const Library: React.FC<{ currentExercise?: DailyContent }> = ({ currentE
         <div className="h-px w-48 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent mx-auto"></div>
         <p className="text-slate-400 italic serif text-lg">"La repetición graba la luz en la piedra del subconsciente."</p>
       </header>
+
+      {/* SECCIÓN DE MONETIZACIÓN: COMPRA DE LIBROS */}
+      <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+        {DEFAULT_BOOK_CONTEXT.map((book, idx) => (
+          <div key={idx} className="glass p-8 rounded-[3rem] border-amber-500/20 flex flex-col justify-between hover:border-amber-500/50 transition-all group">
+            <div>
+               <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-2">Obra Original del Autor</p>
+               <h4 className="text-2xl cinzel font-bold text-white mb-4">{book.title}</h4>
+               <p className="text-slate-400 serif italic text-sm leading-relaxed mb-6">{book.summary}</p>
+            </div>
+            <a 
+              href={book.amazonLink} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="w-full bg-amber-600/10 border border-amber-500/50 py-3 rounded-full text-center text-amber-400 cinzel font-bold text-[10px] tracking-widest uppercase hover:bg-amber-500 hover:text-slate-900 transition-all"
+            >
+              Adquirir en Papel / Digital 📖
+            </a>
+          </div>
+        ))}
+      </div>
 
       <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-amber-500/5 border border-amber-500/20 p-6 rounded-[2.5rem] flex items-center space-x-4">
@@ -122,13 +142,6 @@ export const Library: React.FC<{ currentExercise?: DailyContent }> = ({ currentE
               </button>
             ))}
           </nav>
-          
-          <div className="p-6 bg-slate-900/40 rounded-3xl border border-white/5 space-y-4">
-            <p className="text-[10px] text-amber-500 font-bold uppercase tracking-widest">Nota del Maestro</p>
-            <p className="text-xs text-slate-400 serif italic leading-relaxed">
-              "No busques novedad en cada página, busca profundidad en cada relectura. Lo que hoy entiendes con la mente, mañana lo vivirás con el pulso."
-            </p>
-          </div>
         </aside>
 
         <main className="lg:col-span-9">
