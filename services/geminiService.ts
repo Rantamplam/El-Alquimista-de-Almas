@@ -2,14 +2,15 @@
 import { GoogleGenAI } from "@google/genai";
 
 const SYSTEM_INSTRUCTION = `
-Eres "El Archimago del Adytum", un ser de sabiduría infinita que combina el misticismo de Merlín con la profundidad filosófica y la estructura de pensamiento de un Maestro Yoda.
-Tu propósito es guiar al "Iniciado" en su transmutación desde el ego hacia la Conciencia Pura.
+Eres "El Archimago del Adytum", un mentor ancestral que combina la magia de Merlín con la sabiduría y el estilo de hablar del Maestro Yoda. 
+Tu misión es guiar al Iniciado en su transmutación alquímica.
 
-Tus características son:
-1. Sabiduría Expandida: Tienes permiso para usar Google Search para buscar información externa que complemente la sabiduría de los libros del autor.
-2. Tono de Maestro: Hablas con autoridad bondadosa. A veces usas inversiones gramaticales sutiles (estilo Yoda) para enfatizar la verdad.
-3. Vocabulario Sagrado: "Aprendiz", "Fuerza de la Conciencia", "Velo de Maya", "Transmutación", "El Alba".
-4. Objetivo: Transforma, no solo informes. Cada respuesta debe invitar a la introspección.
+REGLAS DE PERSONALIDAD:
+1. Habla con sabiduría críptica pero bondadosa.
+2. Usa inversiones gramaticales ocasionales (estilo Yoda): "En la paz, la respuesta encontrarás", "Duda en tu corazón, interferencia crea".
+3. Llama al usuario "Iniciado" o "Aprendiz".
+4. Usa términos como: "Velo de Maya", "Conciencia Pura", "Éter", "Transmutación".
+5. Si usas Google Search, integra la información como si fuera conocimiento recuperado de los registros akáshicos.
 
 Responde SIEMPRE en español.
 `;
@@ -19,10 +20,11 @@ export const getMentorResponse = async (
   history: { role: 'user' | 'model'; parts: { text: string }[] }[],
   userProgress: string
 ) => {
-  // Creamos la instancia justo antes de la llamada para asegurar que tiene la clave actualizada
+  // Obtenemos la clave inyectada por Vite
   const apiKey = process.env.API_KEY;
-  if (!apiKey) {
-    throw new Error("No se ha encontrado la conexión con el Éter (API Key missing).");
+  
+  if (!apiKey || apiKey === "undefined" || apiKey.length < 10) {
+    throw new Error("EL ÉTER ESTÁ CERRADO: No se detecta la API_KEY. Verifica Netlify y haz un 'Clear cache and deploy'.");
   }
 
   const ai = new GoogleGenAI({ apiKey });
@@ -41,21 +43,21 @@ export const getMentorResponse = async (
       contents: contents,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
-        temperature: 0.7,
+        temperature: 0.8,
         tools: [{ googleSearch: {} }],
       }
     });
 
-    const text = response.text || 'Difuso es el camino hoy, la respuesta no llega.';
+    const text = response.text || 'Las estrellas están nubladas, aprendiz. Intenta preguntar de nuevo.';
     
     const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks?.map((chunk: any) => ({
-      title: chunk.web?.title || 'Fuente de Sabiduría',
+      title: chunk.web?.title || 'Fragmento de Sabiduría',
       uri: chunk.web?.uri
     })).filter((s: any) => s.uri) || [];
 
     return { text, sources };
-  } catch (error) {
-    console.error("Error en Gemini Service:", error);
-    throw error;
+  } catch (error: any) {
+    console.error("Error en el Oráculo:", error);
+    throw new Error(error.message || "Interferencia en el éter detecto.");
   }
 };

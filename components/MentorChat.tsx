@@ -20,49 +20,52 @@ export const MentorChat: React.FC<MentorChatProps> = ({ userProgress, preferredV
   const [loading, setLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   
-  // Verificamos si existe la clave en el entorno o si ya fue seleccionada
-  const [hasApiKey, setHasApiKey] = useState(!!process.env.API_KEY && process.env.API_KEY !== "undefined");
-  
+  // Detección inicial de clave
+  const checkKey = () => {
+    const key = process.env.API_KEY;
+    return !!key && key !== "undefined" && key.length > 10;
+  };
+
+  const [hasApiKey, setHasApiKey] = useState(checkKey());
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [hasSaved, setHasSaved] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // EFECTO PARA CARGAR VOCES (Soluciona el problema de Chrome)
   useEffect(() => {
-    const checkKey = async () => {
-      // Prioridad 1: Clave ya inyectada en process.env
-      if (process.env.API_KEY && process.env.API_KEY !== "undefined") {
-        setHasApiKey(true);
-        return;
+    const fetchVoices = () => {
+      const voices = window.speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        const esVoices = voices.filter(v => v.lang.toLowerCase().includes('es'));
+        setAvailableVoices(esVoices);
+        
+        // Si no hay voz preferida, asignamos la primera española disponible
+        if (esVoices.length > 0 && !preferredVoiceName) {
+          onVoiceChange(esVoices[0].name);
+        }
+        return true;
       }
-      
-      // Prioridad 2: Selección dinámica si estamos en entorno de AI Studio
-      if ((window as any).aistudio?.hasSelectedApiKey) {
-        const selected = await (window as any).aistudio.hasSelectedApiKey();
-        if (selected) setHasApiKey(true);
-      }
+      return false;
     };
-    checkKey();
-  }, []);
 
-  useEffect(() => {
-    const loadVoices = () => {
-      let voices = window.speechSynthesis.getVoices();
-      if (voices.length === 0) return;
-      const esVoices = voices.filter(v => v.lang.toLowerCase().includes('es'));
-      const sortedVoices = [...esVoices].sort((a, b) => {
-        if (a.localService && !b.localService) return -1;
-        if (!a.localService && b.localService) return 1;
-        return a.name.localeCompare(b.name);
-      });
-      setAvailableVoices(sortedVoices);
-      if (sortedVoices.length > 0 && !preferredVoiceName) {
-        onVoiceChange(sortedVoices[0].name);
-      }
-    };
-    loadVoices();
-    window.speechSynthesis.onvoiceschanged = loadVoices;
+    // Intentar cargar inmediatamente
+    if (!fetchVoices()) {
+      // Si falló, intentar cada 500ms durante 5 segundos
+      const interval = setInterval(() => {
+        if (fetchVoices()) clearInterval(interval);
+      }, 500);
+      
+      const timeout = setTimeout(() => clearInterval(interval), 5000);
+      
+      return () => {
+        clearInterval(interval);
+        clearTimeout(timeout);
+      };
+    }
+
+    window.speechSynthesis.onvoiceschanged = fetchVoices;
     return () => {
-      if (window.speechSynthesis) window.speechSynthesis.onvoiceschanged = null;
+      window.speechSynthesis.onvoiceschanged = null;
     };
   }, [preferredVoiceName, onVoiceChange]);
 
@@ -77,7 +80,7 @@ export const MentorChat: React.FC<MentorChatProps> = ({ userProgress, preferredV
       await (window as any).aistudio.openSelectKey();
       setHasApiKey(true);
     } else {
-      alert("Para conectar con el Archimago, ve a Netlify y configura la variable de entorno: \nNombre: API_KEY \nValor: [Tu clave] \nLuego haz un nuevo Deploy.");
+      alert("⚠️ ARCHIMAGO DESCONECTADO:\n\n1. En Netlify, ve a 'Site Settings' > 'Environment variables'.\n2. Asegúrate de que API_KEY tenga tu clave de Google Gemini.\n3. IMPORTANTE: Ve a 'Deploys' y haz clic en 'Clear cache and deploy site'.");
     }
   };
 
@@ -89,21 +92,30 @@ export const MentorChat: React.FC<MentorChatProps> = ({ userProgress, preferredV
     }
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'es-ES';
+    
+    // Buscar la voz seleccionada o usar la primera disponible
     const voice = availableVoices.find(v => v.name === preferredVoiceName) || availableVoices[0];
     if (voice) utterance.voice = voice;
+    
     utterance.onend = () => setIsSpeaking(false);
     utterance.onstart = () => setIsSpeaking(true);
     window.speechSynthesis.speak(utterance);
   };
 
   const handleSend = async () => {
-    if (!input.trim() || loading || !hasApiKey) return;
+    if (!input.trim() || loading) return;
+    
+    // Si no detectamos clave, intentamos re-chequear antes de fallar
+    if (!hasApiKey && !checkKey()) {
+      handleConnectKey();
+      return;
+    }
+
     const userMsg = input.trim();
     setInput('');
     
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setLoading(true);
-    setHasSaved(false);
 
     try {
       const historyForApi = messages
@@ -116,13 +128,7 @@ export const MentorChat: React.FC<MentorChatProps> = ({ userProgress, preferredV
       const { text, sources } = await getMentorResponse(userMsg, historyForApi, userProgress);
       setMessages(prev => [...prev, { role: 'model', text: text, sources }]);
     } catch (error: any) {
-      console.error("Error al obtener respuesta del Archimago:", error);
-      if (error.message?.includes("API key") || error.message?.includes("not found")) {
-        setHasApiKey(false);
-        setMessages(prev => [...prev, { role: 'model', text: 'La conexión con el éter se ha desvanecido. Revisa tu configuración de API_KEY en Netlify.' }]);
-      } else {
-        setMessages(prev => [...prev, { role: 'model', text: 'Interferencia en la Fuerza detecto. Tu conexión con el éter débil está hoy. Intenta de nuevo, debes.' }]);
-      }
+      setMessages(prev => [...prev, { role: 'model', text: `ERROR: ${error.message}` }]);
     } finally {
       setLoading(false);
     }
@@ -138,21 +144,18 @@ export const MentorChat: React.FC<MentorChatProps> = ({ userProgress, preferredV
   return (
     <div className="flex flex-col h-[calc(100vh-14rem)] max-w-5xl mx-auto mystic-card rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl relative">
       
-      {!hasApiKey && (
-        <div className="absolute inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex flex-col items-center justify-center p-12 text-center space-y-8">
-          <div className="text-7xl animate-pulse">👁️‍🗨️</div>
+      {!hasApiKey && !checkKey() && (
+        <div className="absolute inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-12 text-center space-y-8">
+          <div className="text-7xl">🕯️</div>
           <div className="space-y-4 max-w-md">
-            <h3 className="text-3xl font-bold cinzel gold-text tracking-widest uppercase">Oráculo Desconectado</h3>
+            <h3 className="text-3xl font-bold cinzel gold-text tracking-widest uppercase">Oráculo en Sombras</h3>
             <p className="serif italic text-slate-300">
-              "El Archimago requiere una conexión con el Éter para manifestar su sabiduría en este plano."
-            </p>
-            <p className="text-[10px] cinzel text-slate-500 uppercase tracking-widest">
-              Configura API_KEY en Netlify o vincula manualmente.
+              "El Archimago no detecta tu esencia en este servidor. Si ya configuraste la API_KEY en Netlify, el sitio debes reconstruir."
             </p>
           </div>
           <button 
             onClick={handleConnectKey}
-            className="bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 px-10 py-5 rounded-full font-black cinzel tracking-widest hover:scale-110 transition-all shadow-[0_0_40px_rgba(245,158,11,0.3)] uppercase text-xs"
+            className="bg-amber-500 text-slate-900 px-10 py-5 rounded-full font-black cinzel tracking-widest hover:scale-110 transition-all uppercase text-xs shadow-[0_0_30px_rgba(234,179,8,0.4)]"
           >
             Vincular con el Éter
           </button>
@@ -172,10 +175,10 @@ export const MentorChat: React.FC<MentorChatProps> = ({ userProgress, preferredV
               >
                 {availableVoices.length > 0 ? (
                   availableVoices.map(v => (
-                    <option key={v.name} value={v.name}>{v.name.split(' ')[0]}</option>
+                    <option key={v.name} value={v.name}>{v.name.replace(/Google|Spanish|Spain/g, '').trim()}</option>
                   ))
                 ) : (
-                  <option value="">Detectando voces...</option>
+                  <option value="">Cargando voces del éter...</option>
                 )}
               </select>
             </div>
@@ -204,13 +207,13 @@ export const MentorChat: React.FC<MentorChatProps> = ({ userProgress, preferredV
                 ? 'bg-amber-600/10 text-white border border-amber-500/20' 
                 : 'bg-slate-900/80 text-violet-50 border border-white/10'
             }`}>
-              <p className={`text-xl md:text-2xl leading-relaxed ${msg.role === 'model' ? 'serif italic' : ''}`}>
+              <p className={`text-xl md:text-2xl leading-relaxed ${msg.role === 'model' ? 'serif italic font-light' : ''}`}>
                 {msg.text}
               </p>
               
               {msg.role === 'model' && msg.sources && msg.sources.length > 0 && (
                 <div className="mt-8 pt-6 border-t border-white/10 space-y-3">
-                  <p className="text-[10px] cinzel text-amber-500/60 font-bold uppercase tracking-widest">Fuentes de Verdad:</p>
+                  <p className="text-[10px] cinzel text-amber-500/60 font-bold uppercase tracking-widest">Registros Akáshicos:</p>
                   <div className="flex flex-wrap gap-2">
                     {msg.sources.map((s, idx) => (
                       <a key={idx} href={s.uri} target="_blank" rel="noopener noreferrer" className="text-[10px] bg-amber-500/5 border border-amber-500/20 px-3 py-1 rounded-full text-amber-200 hover:bg-amber-500/20 transition-all">
@@ -223,7 +226,7 @@ export const MentorChat: React.FC<MentorChatProps> = ({ userProgress, preferredV
 
               {msg.role === 'model' && (
                 <button onClick={() => narrate(msg.text)} className="mt-4 text-amber-400 text-xs cinzel tracking-widest hover:text-white transition-colors">
-                  {isSpeaking ? '🔇 Detener' : '🔊 Escuchar'}
+                  {isSpeaking ? 'Detener Voz' : 'Escuchar Maestro'}
                 </button>
               )}
             </div>
@@ -245,13 +248,12 @@ export const MentorChat: React.FC<MentorChatProps> = ({ userProgress, preferredV
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            disabled={!hasApiKey}
-            placeholder={hasApiKey ? "Tu duda en el éter lanza..." : "Conecta el Oráculo primero..."}
+            placeholder="Tu duda en el éter lanza, iniciado..."
             className="w-full p-6 pr-24 bg-slate-950/80 border border-amber-500/30 rounded-full focus:border-amber-500 outline-none text-white serif text-xl transition-all"
           />
           <button 
             onClick={handleSend}
-            disabled={!input.trim() || loading || !hasApiKey}
+            disabled={!input.trim() || loading}
             className="absolute right-4 bg-amber-500 text-slate-900 w-16 h-16 rounded-full hover:scale-110 disabled:opacity-30 transition-all flex items-center justify-center shadow-2xl"
           >
             <span className="text-2xl">⬥</span>
