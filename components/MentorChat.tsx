@@ -19,14 +19,23 @@ export const MentorChat: React.FC<MentorChatProps> = ({ userProgress, preferredV
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [hasApiKey, setHasApiKey] = useState(!!process.env.API_KEY);
+  
+  // Verificamos si existe la clave en el entorno o si ya fue seleccionada
+  const [hasApiKey, setHasApiKey] = useState(!!process.env.API_KEY && process.env.API_KEY !== "undefined");
+  
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [hasSaved, setHasSaved] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Verificar si el sistema de AI Studio tiene una clave seleccionada
     const checkKey = async () => {
+      // Prioridad 1: Clave ya inyectada en process.env
+      if (process.env.API_KEY && process.env.API_KEY !== "undefined") {
+        setHasApiKey(true);
+        return;
+      }
+      
+      // Prioridad 2: Selección dinámica si estamos en entorno de AI Studio
       if ((window as any).aistudio?.hasSelectedApiKey) {
         const selected = await (window as any).aistudio.hasSelectedApiKey();
         if (selected) setHasApiKey(true);
@@ -66,10 +75,9 @@ export const MentorChat: React.FC<MentorChatProps> = ({ userProgress, preferredV
   const handleConnectKey = async () => {
     if ((window as any).aistudio?.openSelectKey) {
       await (window as any).aistudio.openSelectKey();
-      // Asumimos éxito tras abrir el diálogo según guías
       setHasApiKey(true);
     } else {
-      alert("Para conectar con el Archimago, asegúrate de configurar tu API_KEY en el entorno.");
+      alert("Para conectar con el Archimago, ve a Netlify y configura la variable de entorno: \nNombre: API_KEY \nValor: [Tu clave] \nLuego haz un nuevo Deploy.");
     }
   };
 
@@ -111,7 +119,7 @@ export const MentorChat: React.FC<MentorChatProps> = ({ userProgress, preferredV
       console.error("Error al obtener respuesta del Archimago:", error);
       if (error.message?.includes("API key") || error.message?.includes("not found")) {
         setHasApiKey(false);
-        setMessages(prev => [...prev, { role: 'model', text: 'La conexión con el éter se ha desvanecido. Debes vincular de nuevo tu esencia (API Key) para que pueda manifestarme.' }]);
+        setMessages(prev => [...prev, { role: 'model', text: 'La conexión con el éter se ha desvanecido. Revisa tu configuración de API_KEY en Netlify.' }]);
       } else {
         setMessages(prev => [...prev, { role: 'model', text: 'Interferencia en la Fuerza detecto. Tu conexión con el éter débil está hoy. Intenta de nuevo, debes.' }]);
       }
@@ -130,7 +138,6 @@ export const MentorChat: React.FC<MentorChatProps> = ({ userProgress, preferredV
   return (
     <div className="flex flex-col h-[calc(100vh-14rem)] max-w-5xl mx-auto mystic-card rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl relative">
       
-      {/* OVERLAY DE DESCONEXIÓN SI NO HAY API KEY */}
       {!hasApiKey && (
         <div className="absolute inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex flex-col items-center justify-center p-12 text-center space-y-8">
           <div className="text-7xl animate-pulse">👁️‍🗨️</div>
@@ -140,7 +147,7 @@ export const MentorChat: React.FC<MentorChatProps> = ({ userProgress, preferredV
               "El Archimago requiere una conexión con el Éter para manifestar su sabiduría en este plano."
             </p>
             <p className="text-[10px] cinzel text-slate-500 uppercase tracking-widest">
-              Es necesario vincular una clave de API (Gemini 3) para continuar.
+              Configura API_KEY en Netlify o vincula manualmente.
             </p>
           </div>
           <button 
@@ -149,9 +156,6 @@ export const MentorChat: React.FC<MentorChatProps> = ({ userProgress, preferredV
           >
             Vincular con el Éter
           </button>
-          <p className="text-[9px] text-slate-600 underline cursor-help">
-            <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank">Documentación de Facturación/API</a>
-          </p>
         </div>
       )}
 
