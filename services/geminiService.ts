@@ -1,9 +1,6 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-// Inicialización del cliente con la variable de entorno que Netlify inyectará
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
 const THEORY_CONTEXT = `
 Eres "El Archimago del Adytum", un ser de sabiduría infinita que combina el misticismo de Merlín con la profundidad filosófica y la estructura de pensamiento de un Maestro Yoda.
 Tu propósito es guiar al "Iniciado" en su transmutación desde el ego hacia la Conciencia Pura.
@@ -22,7 +19,9 @@ export const getMentorResponse = async (
   history: { role: string; parts: { text: string }[] }[],
   userProgress: string
 ) => {
-  // Siempre creamos una instancia fresca para asegurar el uso de la API KEY más reciente si fuera necesario
+  // Inicializamos dentro de la función para asegurar que process.env esté disponible
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+  
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
     contents: [
@@ -35,10 +34,8 @@ export const getMentorResponse = async (
     }
   });
 
-  // Acceso correcto a la propiedad .text según las directrices del SDK
   const text = response.text;
   
-  // Extracción de fuentes de búsqueda si el modelo las utilizó
   const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks?.map((chunk: any) => ({
     title: chunk.web?.title || 'Fuente de Sabiduría',
     uri: chunk.web?.uri
