@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { UserProgress } from '../types';
 import { EXERCISES } from '../data/exercises';
 import { BENEFACTORS } from '../constants';
+import { SacredLogo } from './SacredLogo';
 
 interface DashboardProps {
   progress: UserProgress;
@@ -23,9 +24,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ progress, userName, onCont
   return (
     <div className="space-y-12 animate-fadeIn pb-20">
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-2">
-          <h2 className="text-6xl font-bold serif gold-text tracking-tight tracking-widest uppercase">Paz, {userName}</h2>
-          <p className="text-violet-300/80 text-2xl serif italic font-light">"Tu constancia es la llave que abre los portales internos."</p>
+        <div className="flex items-center space-x-6">
+          <SacredLogo size="w-20 h-20" />
+          <div className="space-y-2">
+            <h2 className="text-6xl font-bold serif gold-text tracking-tight tracking-widest uppercase">Paz, {userName}</h2>
+            <p className="text-violet-300/80 text-2xl serif italic font-light">"Tu constancia es la llave que abre los portales internos."</p>
+          </div>
         </div>
         <div className="flex space-x-6">
            <div className="glass p-6 rounded-[2.5rem] text-center min-w-[140px] border-amber-500/20 shadow-[0_0_30px_rgba(234,179,8,0.1)]">

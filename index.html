@@ -63,6 +63,14 @@
         -webkit-text-fill-color: transparent;
       }
 
+      @keyframes spin-slow {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      .animate-spin-slow {
+        animation: spin-slow 12s linear infinite;
+      }
+
       #local-warning {
         display: none;
         position: fixed;
@@ -124,7 +132,6 @@
     <div class="stars"></div>
     <div id="root"></div>
     
-    <!-- Usamos ruta relativa para que funcione mejor en entornos de desarrollo -->
     <script type="module" src="./index.tsx"></script>
     
     <noscript>

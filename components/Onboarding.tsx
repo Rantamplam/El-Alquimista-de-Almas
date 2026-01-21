@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { SacredLogo } from './SacredLogo';
 
 export const Onboarding: React.FC<{ onStart: (name?: string) => void }> = ({ onStart }) => {
   const [name, setName] = useState('');
@@ -9,6 +10,7 @@ export const Onboarding: React.FC<{ onStart: (name?: string) => void }> = ({ onS
       <div className="stars"></div>
       <div className="max-w-4xl w-full mystic-card rounded-[4rem] p-10 md:p-16 space-y-12 relative overflow-hidden border-amber-500/30 my-10">
         <div className="text-center space-y-6">
+          <SacredLogo size="w-40 h-40 mb-6" />
           <h1 className="text-6xl md:text-8xl font-bold cinzel gold-text tracking-[0.3em]">ADYTUM</h1>
           <div className="h-px w-48 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent mx-auto"></div>
           <p className="text-2xl md:text-3xl serif italic text-violet-200 leading-relaxed">"La Gran Obra de tu Propio Despertar"</p>

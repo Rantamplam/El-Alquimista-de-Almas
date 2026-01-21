@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { AppView } from '../types';
 import { AtmospherePlayer } from './AtmospherePlayer';
 import { SupportModal } from './SupportModal';
+import { SacredLogo } from './SacredLogo';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -28,7 +29,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeView, setView })
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       <aside className="hidden md:flex flex-col w-72 bg-slate-950/60 backdrop-blur-3xl border-r border-amber-500/10 p-8 fixed h-full z-40">
-        <div className="mb-12 text-center relative group">
+        <div className="mb-10 text-center relative group">
+          <SacredLogo size="w-24 h-24 mb-4" />
           <h1 className="text-4xl font-black cinzel gold-text tracking-[0.3em] drop-shadow-[0_0_15px_rgba(234,179,8,0.3)]">ADYTUM</h1>
           <div className="h-px w-24 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent mx-auto mt-2"></div>
         </div>
@@ -49,7 +51,6 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeView, setView })
             </button>
           ))}
 
-          {/* ENLACE DIRECTO A YODA GPT - MÁS LLAMATIVO */}
           <a
             href={YODA_GPT_URL}
             target="_blank"
